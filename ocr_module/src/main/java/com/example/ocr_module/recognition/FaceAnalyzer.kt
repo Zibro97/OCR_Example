@@ -1,9 +1,11 @@
 package com.example.ocr_module.recognition
 
+import android.graphics.PointF
+import android.graphics.RectF
 import android.media.Image
+import android.util.SizeF
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.ImageProxy
-import androidx.camera.core.Preview
 import androidx.camera.view.PreviewView
 import androidx.lifecycle.Lifecycle
 import com.google.android.gms.tasks.OnFailureListener
@@ -12,6 +14,7 @@ import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.face.Face
 import com.google.mlkit.vision.face.FaceDetection
 import com.google.mlkit.vision.face.FaceDetectorOptions
+import kotlin.math.abs
 
 internal class FaceAnalyzer(
     lifecycle : Lifecycle,
@@ -20,6 +23,11 @@ internal class FaceAnalyzer(
 ) : ImageAnalysis.Analyzer {
     private var widthScaleFactor = 1F
     private var heightScaleFactor = 1F
+
+    private var preCenterX = 0F
+    private var preCenterY = 0F
+    private var preWidth = 0F
+    private var preHeight = 0F
 
     private val options = FaceDetectorOptions.Builder()
         .setPerformanceMode(FaceDetectorOptions.PERFORMANCE_MODE_ACCURATE)
@@ -58,6 +66,7 @@ internal class FaceAnalyzer(
                 listener?.stopDetect()
                 detector.close()
             }
+            calDetectSize(face)
         } else if(detectStatus != FaceAnalyzerStatus.UnDetect && detectStatus != FaceAnalyzerStatus.Smile){
             detectStatus = FaceAnalyzerStatus.UnDetect
             listener?.notDetect()
@@ -92,8 +101,50 @@ internal class FaceAnalyzer(
             }
     }
 
+    private fun calDetectSize(face : Face) {
+        val rect = face.boundingBox
+        val boxWidth = rect.right - rect.left
+        val boxHeight = rect.bottom - rect.top
+
+        val left = rect.right.translateX() - (boxWidth / 2)
+        val top = rect.top.translateY() - (boxHeight / 2)
+        val right = rect.left.translateX() + (boxWidth / 2)
+        val bottom = rect.bottom.translateY()
+
+        val width = right - left
+        val height = bottom - top
+        val centerX = left + width / 2
+        val centerY = top + height / 2
+
+        // 테두리가 픽셀단위로 쪼개져서 보일 수 있어서 OFFSET을 줌
+        if(abs(preCenterX - centerX) > PIVOT_OFFSET
+            || abs(preCenterY - centerY) > PIVOT_OFFSET
+            || abs(preWidth - width) > SIZE_OFFSET
+            || abs(preHeight - height) > SIZE_OFFSET
+        ) {
+            listener?.faceSize(
+                RectF(left, top, right, bottom),
+                SizeF(width, height),
+                PointF(centerX, centerY)
+            )
+
+            preCenterX = centerX
+            preCenterY = centerY
+            preWidth = width
+            preHeight = height
+        }
+    }
+
+    private fun Int.translateX() = preview.width - (toFloat() * widthScaleFactor)
+
+    // TODO: what scaleFactor?
+    private fun Int.translateY() = preview.height - (toFloat() * heightScaleFactor)
+
     companion object {
         private const val EYE_SUCCESS_VALUE = 0.1F
         private const val SMILE_SUCCESS_VALUE = 0.8F
+
+        private const val PIVOT_OFFSET = 15
+        private const val SIZE_OFFSET = 30
     }
 }

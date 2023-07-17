@@ -4,15 +4,21 @@ import android.Manifest
 import android.app.Activity
 import android.content.Context
 import android.content.pm.PackageManager
+import android.os.Build
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.activity.ComponentActivity
+import androidx.annotation.RequiresApi
 import androidx.camera.core.CameraSelector
+import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleOwner
+import com.example.ocr_module.recognition.FaceAnalyzer
+import com.example.ocr_module.recognition.FaceAnalyzerListener
 import com.google.common.util.concurrent.ListenableFuture
 import java.util.concurrent.Executors
 
@@ -37,7 +43,10 @@ class Camera(private val context : Context) : ActivityCompat.OnRequestPermission
 
     private var cameraExecutor = Executors.newSingleThreadExecutor()
 
-    fun initCamera(layout : ViewGroup) {
+    private var listener : FaceAnalyzerListener? = null
+
+    fun initCamera(layout : ViewGroup,listener: FaceAnalyzerListener) {
+        this.listener = listener
         previewView = PreviewView(context)
         layout.addView(previewView)
         permissionCheck(context)
@@ -57,9 +66,42 @@ class Camera(private val context : Context) : ActivityCompat.OnRequestPermission
         cameraProviderFuture = ProcessCameraProvider.getInstance(context)
             .also { providerFuture ->
                 providerFuture.addListener({
-
+                                           startPreview(context)
                 }, ContextCompat.getMainExecutor(context))
             }
+    }
+
+    //메인액티비티에서 얼굴 인식 호출하는 함수
+    fun startFaceDetect() {
+        val cameraProvider = cameraProviderFuture.get()
+        val faceAnalyzer = FaceAnalyzer((context as ComponentActivity).lifecycle, previewView, listener)
+
+        val analysisUseCase = ImageAnalysis.Builder()
+            .build()
+            .also {
+                it.setAnalyzer(cameraExecutor, faceAnalyzer)
+            }
+
+        try {
+            cameraProvider.bindToLifecycle(
+                context as LifecycleOwner,
+                cameraSelector,
+                preview,
+                analysisUseCase
+            )
+        }catch (e:Exception){
+            e.printStackTrace()
+        }
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    fun stopFaceDetect() {
+        try {
+          cameraProviderFuture.get().unbindAll()
+          previewView.releasePointerCapture()
+        } catch (e:Exception){
+            e.printStackTrace()
+        }
     }
 
     private fun startPreview(context : Context) {
