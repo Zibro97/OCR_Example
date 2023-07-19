@@ -48,12 +48,12 @@ internal class FaceAnalyzer(
                 listener?.detectProgress(25F,"얼굴을 인식했습니다.\n왼쪽 눈만 깜빡여주세요.")
             } else if(detectStatus == FaceAnalyzerStatus.Detect
                 && (face.leftEyeOpenProbability ?:0F) > EYE_SUCCESS_VALUE
-                && (face.rightEyeOpenProbability ?:0F) > EYE_SUCCESS_VALUE
+                && (face.rightEyeOpenProbability ?:0F) < EYE_SUCCESS_VALUE
             ){
                 detectStatus = FaceAnalyzerStatus.LeftWink
                 listener?.detectProgress(50F,"오른쪽 눈만 깜빡여주세요.")
             } else if(detectStatus == FaceAnalyzerStatus.LeftWink
-                && (face.leftEyeOpenProbability ?: 0F) > EYE_SUCCESS_VALUE
+                && (face.leftEyeOpenProbability ?: 0F) < EYE_SUCCESS_VALUE
                 && (face.rightEyeOpenProbability ?: 0F) > EYE_SUCCESS_VALUE
             ){
                 detectStatus = FaceAnalyzerStatus.RightWink
@@ -136,9 +136,7 @@ internal class FaceAnalyzer(
     }
 
     private fun Int.translateX() = preview.width - (toFloat() * widthScaleFactor)
-
-    // TODO: what scaleFactor?
-    private fun Int.translateY() = preview.height - (toFloat() * heightScaleFactor)
+    private fun Int.translateY() = toFloat() * heightScaleFactor
 
     companion object {
         private const val EYE_SUCCESS_VALUE = 0.1F
