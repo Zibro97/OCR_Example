@@ -9,8 +9,8 @@ import android.util.SizeF
 import androidx.annotation.RequiresApi
 import androidx.core.view.isVisible
 import androidx.transition.TransitionManager
-import com.example.ocr_module.Camera
-import com.example.ocr_module.recognition.FaceAnalyzerListener
+import com.example.face_recognition.Camera
+import com.example.face_recognition.recognition.FaceAnalyzerListener
 import com.example.ocrexample.databinding.ActivityMainBinding
 
 class MainActivity : AppCompatActivity(), FaceAnalyzerListener {

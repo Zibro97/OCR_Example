@@ -1,4 +1,4 @@
-package com.example.ocr_module
+package com.example.face_recognition
 
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.ext.junit.runners.AndroidJUnit4

@@ -1,4 +1,4 @@
-package com.example.ocr_module.recognition
+package com.example.face_recognition.recognition
 
 import android.graphics.PointF
 import android.graphics.RectF

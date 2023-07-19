@@ -1,4 +1,4 @@
-package com.example.ocr_module
+package com.example.face_recognition
 
 import android.Manifest
 import android.app.Activity
@@ -17,8 +17,8 @@ import androidx.camera.view.PreviewView
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleOwner
-import com.example.ocr_module.recognition.FaceAnalyzer
-import com.example.ocr_module.recognition.FaceAnalyzerListener
+import com.example.face_recognition.recognition.FaceAnalyzer
+import com.example.face_recognition.recognition.FaceAnalyzerListener
 import com.google.common.util.concurrent.ListenableFuture
 import java.util.concurrent.Executors
 

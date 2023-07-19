@@ -4,7 +4,7 @@ plugins {
 }
 
 android {
-    namespace 'com.example.ocr_module'
+    namespace 'com.example.face_recognition'
     compileSdk 33
 
     defaultConfig {

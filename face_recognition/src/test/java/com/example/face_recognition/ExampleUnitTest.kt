@@ -1,4 +1,4 @@
-package com.example.ocr_module
+package com.example.face_recognition
 
 import org.junit.Test
 
